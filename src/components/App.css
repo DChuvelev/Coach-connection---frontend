@@ -1,0 +1,18 @@
+.App {
+  margin: auto;
+  text-align: center;
+  font-family: 'Inter', 'Arial', Arial, sans-serif;
+  max-width: 1000px;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  transition: background-color 5000s ease-in-out 0s;
+};
