@@ -1,6 +1,8 @@
 import {
   MIN_PASSWORD_LENGTH,
   MAX_PASSWORD_LENGTH,
+  MIN_USERNAME_LENGTH,
+  MAX_USERNAME_LENGTH,
   MAX_USERPIC_FILE_SIZE,
 } from "./commonValues";
 
@@ -22,6 +24,14 @@ export const translations = {
       password_too_long: {
         ru: `Пароль должен быть не длиннее ${MAX_PASSWORD_LENGTH} символов`,
         en: `Password should be maximum ${MAX_PASSWORD_LENGTH} characters long`,
+      },
+      username_too_short: {
+        ru: `Имя пользователя должно быть не короче ${MIN_PASSWORD_LENGTH} символов`,
+        en: `Username should be at least ${MIN_PASSWORD_LENGTH} characters`,
+      },
+      username_too_long: {
+        ru: `Имя пользователя должно быть не длиннее ${MAX_PASSWORD_LENGTH} символов`,
+        en: `Username should be maximum ${MAX_PASSWORD_LENGTH} characters long`,
       },
       userpic_file_too_big: {
         ru: `Размер файла не должен превышать ${Math.floor(

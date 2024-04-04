@@ -1,33 +1,68 @@
-import React, { useContext } from "react";
+import React from "react";
 import "./LoginModal.css";
 import ModalWithForm from "../ModalWithForm/ModalWithForm";
 import { useForm } from "react-hook-form";
 import { translations } from "../../utils/constants/translations";
-import { CurrentLanguageContext } from "../../context/CurrentLanguageContext";
 import {
   MIN_PASSWORD_LENGTH,
   MAX_PASSWORD_LENGTH,
 } from "../../utils/constants/commonValues";
+import { LoginFormData, Props } from "./LoginModalTypes";
+import { useAppSelector } from "../redux/hooks";
+import { useAppDispatch } from "../redux/hooks";
+import {
+  setLoginFormValues,
+  setRegisterFormValues,
+} from "../redux/slices/appSlice";
 
-export default function LoginModal({ formInfo, activeModal, onClose, isBusy }) {
-  const { currentLanguage } = useContext(CurrentLanguageContext);
+export const LoginModal: React.FC<Props> = ({
+  formInfo,
+  formCallbacks,
+  activeModal,
+  onClose,
+  isBusy,
+}) => {
+  const currentLanguage = useAppSelector((state) => state.app.lang);
+  const loginFormValues = useAppSelector((state) => state.app.loginFormValues);
+  const registerFormValues = useAppSelector(
+    (state) => state.app.registerFormValues
+  );
+  const dispatch = useAppDispatch();
   const {
     register,
     watch,
     handleSubmit,
     formState: { errors },
-  } = useForm({
-    defaultValues: {
-      email: formInfo.formValues.email,
-      password: formInfo.formValues.password,
-    },
+  } = useForm<LoginFormData>({
+    defaultValues: loginFormValues,
   });
+
+  const handleSubmitLogin = () => {
+    dispatch(setLoginFormValues(formValues));
+    formCallbacks.handleSubmit();
+  };
+
+  const handleRedir = () => {
+    dispatch(setLoginFormValues(formValues));
+    dispatch(
+      setRegisterFormValues({
+        ...registerFormValues,
+        email: formValues.email,
+        password: formValues.password,
+      })
+    );
+    formCallbacks.handleRedir();
+  };
 
   const formValues = watch();
 
   return (
     <ModalWithForm
-      formInfo={{ ...formInfo, onSubmit: handleSubmit(formInfo.handleSubmit) }}
+      formInfo={formInfo}
+      formCallbacks={{
+        handleRedir,
+        handleSubmit: handleSubmit(handleSubmitLogin),
+      }}
       activeModal={activeModal}
       onClose={onClose}
       isBusy={isBusy}
@@ -84,4 +119,4 @@ export default function LoginModal({ formInfo, activeModal, onClose, isBusy }) {
       </fieldset>
     </ModalWithForm>
   );
-}
+};

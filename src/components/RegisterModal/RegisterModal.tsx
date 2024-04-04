@@ -1,47 +1,76 @@
-import React, { createRef, useContext } from "react";
+import React from "react";
 import "./RegisterModal.css";
 import ModalWithForm from "../ModalWithForm/ModalWithForm";
 import { useForm } from "react-hook-form";
 import { translations } from "../../utils/constants/translations";
-import { CurrentLanguageContext } from "../../context/CurrentLanguageContext";
 import {
   MIN_PASSWORD_LENGTH,
   MAX_PASSWORD_LENGTH,
   MAX_USERPIC_FILE_SIZE,
+  MIN_USERNAME_LENGTH,
+  MAX_USERNAME_LENGTH,
 } from "../../utils/constants/commonValues";
 import downloadIcon from "../../images/download.svg";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
+import { Props } from "./RegisterModalTypes";
+import { UserToRegister } from "../redux/slices/dbTypes";
+import {
+  setRegisterFormValues,
+  setLoginFormValues,
+} from "../redux/slices/appSlice";
 
-export default function RegisterModal({
+export const RegisterModal: React.FC<Props> = ({
   formInfo,
+  formCallbacks,
   activeModal,
   onClose,
   isBusy,
-}) {
-  const { currentLanguage } = useContext(CurrentLanguageContext);
+}) => {
+  const currentLanguage = useAppSelector((store) => store.app.lang);
+  const registerFormValues = useAppSelector(
+    (state) => state.app.registerFormValues
+  );
+  const loginFormValues = useAppSelector((state) => state.app.loginFormValues);
+  const dispatch = useAppDispatch();
   const {
     register,
     watch,
     handleSubmit,
     formState: { errors },
-  } = useForm({
-    defaultValues: {
-      email: formInfo.formValues.email,
-      password: formInfo.formValues.password,
-      confirmPassword: "",
-      name: "",
-      userpic: "",
-    },
+  } = useForm<UserToRegister>({
+    defaultValues: registerFormValues,
   });
 
   const formValues = watch();
 
+  const handleSubmitRegister = () => {
+    dispatch(setRegisterFormValues(formValues));
+    formCallbacks.handleSubmit();
+  };
+
+  const handleRedir = () => {
+    dispatch(setRegisterFormValues(formValues));
+    dispatch(
+      setLoginFormValues({
+        ...loginFormValues,
+        email: formValues.email,
+        password: formValues.password,
+      })
+    );
+    formCallbacks.handleRedir();
+  };
+
   return (
     <ModalWithForm
-      formInfo={{ ...formInfo, onSubmit: handleSubmit(formInfo.handleSubmit) }}
+      formInfo={formInfo}
+      formCallbacks={{
+        handleRedir,
+        handleSubmit: handleSubmit(handleSubmitRegister),
+      }}
+      formValues={formValues}
       activeModal={activeModal}
       onClose={onClose}
       isBusy={isBusy}
-      formValues={formValues}
     >
       <fieldset className="register__input-fieldset">
         <div className="register__input-field">
@@ -170,11 +199,11 @@ export default function RegisterModal({
             placeholder={translations.common.name[currentLanguage]}
             {...register("name", {
               minLength: {
-                value: "1",
+                value: MIN_USERNAME_LENGTH,
                 message: "User name should be at least 1 character",
               },
               maxLength: {
-                value: "30",
+                value: MAX_USERNAME_LENGTH,
                 message: "User name should be maximum 30 characters long",
               },
               required:
@@ -188,7 +217,7 @@ export default function RegisterModal({
         <div className="register__input-field">
           <div className="register__input-field_type_file">
             <label className="register__file-label" htmlFor="user-pic">
-              <img src={downloadIcon} className="register__file-icon" />
+              <img src={downloadIcon} className="register__file-icon" alt="" />
               <p className="register__file-label-txt">
                 {translations.common.download_avatar[currentLanguage]}
               </p>
@@ -200,9 +229,9 @@ export default function RegisterModal({
                 {...register("userpic", {
                   validate: {
                     fileSize: (val) => {
-                      if (val.item && val.item(0)) {
+                      if (val?.item && val.item(0)) {
                         return (
-                          val.item(0).size < MAX_USERPIC_FILE_SIZE ||
+                          val.item(0)!.size < MAX_USERPIC_FILE_SIZE ||
                           translations.common.errors.userpic_file_too_big[
                             currentLanguage
                           ]
@@ -216,8 +245,8 @@ export default function RegisterModal({
               />
             </label>
             <p className="register__filename">
-              {formValues.userpic.item && formValues.userpic.item(0)
-                ? formValues.userpic.item(0).name
+              {formValues.userpic?.item && formValues.userpic.item(0)
+                ? formValues.userpic.item(0)!.name
                 : translations.common.file_not_loaded[currentLanguage]}
             </p>
           </div>
@@ -228,4 +257,4 @@ export default function RegisterModal({
       </fieldset>
     </ModalWithForm>
   );
-}
+};
