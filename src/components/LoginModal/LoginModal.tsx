@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./LoginModal.css";
 import ModalWithForm from "../ModalWithForm/ModalWithForm";
 import { useForm } from "react-hook-form";
@@ -7,13 +7,15 @@ import {
   MIN_PASSWORD_LENGTH,
   MAX_PASSWORD_LENGTH,
 } from "../../utils/constants/commonValues";
-import { LoginFormData, Props } from "./LoginModalTypes";
+import { Props } from "./LoginModalTypes";
 import { useAppSelector } from "../redux/hooks";
 import { useAppDispatch } from "../redux/hooks";
 import {
   setLoginFormValues,
   setRegisterFormValues,
+  resetAuthError,
 } from "../redux/slices/appSlice";
+import { LoginFormData } from "../redux/slices/dbTypes";
 
 export const LoginModal: React.FC<Props> = ({
   formInfo,
@@ -27,6 +29,7 @@ export const LoginModal: React.FC<Props> = ({
   const registerFormValues = useAppSelector(
     (state) => state.app.registerFormValues
   );
+  const appError = useAppSelector((state) => state.app.error);
   const dispatch = useAppDispatch();
   const {
     register,
@@ -55,6 +58,9 @@ export const LoginModal: React.FC<Props> = ({
   };
 
   const formValues = watch();
+  useEffect(() => {
+    if (appError) dispatch(resetAuthError());
+  }, [formValues.email, formValues.password, formValues.role]);
 
   return (
     <ModalWithForm
@@ -66,9 +72,40 @@ export const LoginModal: React.FC<Props> = ({
       activeModal={activeModal}
       onClose={onClose}
       isBusy={isBusy}
-      formValues={formValues}
+      errorMessage={appError}
     >
       <fieldset className="login__input-fieldset">
+        <div className="login__input-field">
+          <div className="login__toggle-switch">
+            <label className="login__switch-btn-container">
+              <input
+                type="radio"
+                value="coach"
+                {...register("role", {
+                  required: translations.login.role.error[currentLanguage],
+                })}
+              />
+              <span className="login__switch-btn">
+                {translations.login.role.coach[currentLanguage]}
+              </span>
+            </label>
+            <label className="login__switch-btn-container">
+              <input
+                type="radio"
+                value="client"
+                {...register("role", {
+                  required: translations.login.role.error[currentLanguage],
+                })}
+              />
+              <span className="login__switch-btn">
+                {translations.login.role.client[currentLanguage]}
+              </span>
+            </label>
+          </div>
+          {errors.role && (
+            <p className="login__error-message">{errors.role.message}</p>
+          )}
+        </div>
         <div className="login__input-field">
           <input
             className="login__input"

@@ -46,6 +46,10 @@ export const translations = {
       en: "or",
       ru: "или",
     },
+    as: {
+      en: "as",
+      ru: "как",
+    },
     name: {
       ru: "Имя",
       en: "Name",
@@ -103,6 +107,20 @@ export const translations = {
     logging: {
       ru: "Вход...",
       en: "Logging in...",
+    },
+    role: {
+      coach: {
+        ru: "Коуч",
+        en: "Coach",
+      },
+      client: {
+        ru: "Клиент",
+        en: "Client",
+      },
+      error: {
+        ru: "Пожалуйста, выберите свою роль",
+        en: "Please, choose your role",
+      },
     },
   },
   register: {

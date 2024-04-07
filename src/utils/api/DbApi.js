@@ -14,7 +14,7 @@ export default class DbApi {
       } else {
         return res.json().then((err) => {
           return Promise.reject(
-            `${errMsg} ${err.message}. ${
+            `${errMsg} ${err.message} ${
               err.validation ? err.validation.body.message : ""
             }`
           );
@@ -33,12 +33,11 @@ export default class DbApi {
         method: "POST",
         body: JSON.stringify(userInfo),
       },
-      "Server returned error:"
+      "Error:"
     );
   }
 
   registerUser = (userInfo) => {
-
     return this._auth(userInfo, "signup");
   };
 
@@ -53,7 +52,7 @@ export default class DbApi {
         headers: { ...this._headers, authorization: `Bearer ${token}` },
         method: "GET",
       },
-      "Server returned error:"
+      "Error:"
     );
   };
 
@@ -65,7 +64,7 @@ export default class DbApi {
         body: JSON.stringify(userInfo),
         method: "PATCH",
       },
-      "Server returned error:"
+      "Error:"
     );
   };
 

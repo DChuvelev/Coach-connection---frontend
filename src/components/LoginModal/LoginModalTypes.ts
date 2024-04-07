@@ -1,4 +1,5 @@
 import { FormInfo, FormCallbacks } from "../ModalWithForm/ModalWithFormTypes";
+import { LoginFormData } from "../redux/slices/dbTypes";
 
 export interface Props {
   formInfo: FormInfo;
@@ -8,12 +9,8 @@ export interface Props {
   isBusy: boolean;
 }
 
-export interface LoginFormData extends Record<string, unknown> {
-  email: string;
-  password: string;
-}
-
 export const loginFormDefaultData: LoginFormData = {
+  role: "",
   email: "",
   password: "",
 };

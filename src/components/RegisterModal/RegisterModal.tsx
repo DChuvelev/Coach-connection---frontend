@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./RegisterModal.css";
 import ModalWithForm from "../ModalWithForm/ModalWithForm";
 import { useForm } from "react-hook-form";
@@ -17,6 +17,7 @@ import { UserToRegister } from "../redux/slices/dbTypes";
 import {
   setRegisterFormValues,
   setLoginFormValues,
+  resetAuthError,
 } from "../redux/slices/appSlice";
 
 export const RegisterModal: React.FC<Props> = ({
@@ -31,6 +32,7 @@ export const RegisterModal: React.FC<Props> = ({
     (state) => state.app.registerFormValues
   );
   const loginFormValues = useAppSelector((state) => state.app.loginFormValues);
+  const appError = useAppSelector((state) => state.app.error);
   const dispatch = useAppDispatch();
   const {
     register,
@@ -42,6 +44,10 @@ export const RegisterModal: React.FC<Props> = ({
   });
 
   const formValues = watch();
+
+  useEffect(() => {
+    if (appError) dispatch(resetAuthError());
+  }, [formValues.email, formValues.role]);
 
   const handleSubmitRegister = () => {
     dispatch(setRegisterFormValues(formValues));
@@ -67,10 +73,10 @@ export const RegisterModal: React.FC<Props> = ({
         handleRedir,
         handleSubmit: handleSubmit(handleSubmitRegister),
       }}
-      formValues={formValues}
       activeModal={activeModal}
       onClose={onClose}
       isBusy={isBusy}
+      errorMessage={appError}
     >
       <fieldset className="register__input-fieldset">
         <div className="register__input-field">

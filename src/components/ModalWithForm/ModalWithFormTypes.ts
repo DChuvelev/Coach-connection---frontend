@@ -19,11 +19,11 @@ export const defaultFormInfo: FormInfo = {
   btnTxtTypeBusy: "",
 };
 
-export interface Props<T> {
+export interface Props {
   formInfo: FormInfo;
   formCallbacks: FormCallbacks;
-  formValues: T;
   activeModal: string;
   onClose: () => void;
   isBusy: boolean;
+  errorMessage: string | undefined;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import Header from "./Header/Header";
 import Main from "./Main/Main";
@@ -10,13 +10,17 @@ import { LoginModal } from "./LoginModal/LoginModal";
 import { translations } from "../utils/constants/translations";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import {
+  login,
   setLoginFormValues,
   setRegisterFormValues,
+  resetAuthError,
+  setAuthStatus,
 } from "./redux/slices/appSlice";
 import { registerUser } from "./redux/slices/appSlice";
 import { FormInfo, defaultFormInfo } from "./ModalWithForm/ModalWithFormTypes";
 import { loginFormDefaultData } from "./LoginModal/LoginModalTypes";
 import { registerFormDefaultData } from "./RegisterModal/RegisterModalTypes";
+import { UserToRegister } from "./redux/slices/dbTypes";
 
 function App() {
   const [activeModal, setActiveModal] = useState("");
@@ -24,6 +28,14 @@ function App() {
   const currentLanguage = useAppSelector((state) => state.app.lang);
   const dispatch = useAppDispatch();
   const [isBusy, setIsBusy] = useState(false);
+  const authStatus = useAppSelector((state) => state.app.authStatus);
+
+  useEffect(() => {
+    if (authStatus === "succeeded") {
+      handleModalClose();
+      dispatch(setAuthStatus("idle"));
+    }
+  }, [authStatus]);
 
   //---------------------- Common functions -----------------------------
 
@@ -46,9 +58,20 @@ function App() {
   const handleModalClose = () => {
     resetFormsData();
     setActiveModal("");
+    dispatch(resetAuthError());
   };
 
   const handleFindCoach = () => {
+    const userToRegister: UserToRegister = {
+      name: "Dmitry",
+      email: "d.chuvelev@gmail.com",
+      password: "redttt",
+      confirmPassword: "redttt",
+      role: "client",
+      userpic: undefined,
+    };
+    dispatch(setRegisterFormValues(userToRegister));
+    dispatch(registerUser());
     //   console.log('Ask GPT');
     //   gptApi.askGpt([{
     //     "role": "user",
@@ -74,7 +97,7 @@ function App() {
     setActiveModal("form");
     setFormInfo({
       formType: "login",
-      name: translations.header.login[currentLanguage],
+      name: `${translations.header.login[currentLanguage]} ${translations.common.as[currentLanguage]}...`,
       btnTxt: translations.header.login[currentLanguage],
       redirBtnTxt: `${
         translations.common.or[currentLanguage]
@@ -84,20 +107,10 @@ function App() {
   };
 
   const handleSubmitLogin = () => {
-    // handleSubmit(() => {
-    //   return dbApi.authorizeUser({ email, password }).then((res) => {
-    //     handleLogin(res);
-    //   })
-    // })
+    dispatch(login());
   };
 
   const handleRedirectFromLoginToRegister = () => {
-    // const newRegisterFormValues: UserToRegister = {
-    //   ...registerFormDefaultData,
-    // };
-    // Object.assign(newRegisterFormValues, registerFormValues);
-    // Object.assign(newRegisterFormValues, loginFormValues);
-    // dispatch(setRegisterFormValues(newRegisterFormValues));
     handleOpenRegisterModal();
   };
 
@@ -190,7 +203,7 @@ function App() {
             }}
             activeModal={activeModal}
             onClose={handleModalClose}
-            isBusy={isBusy}
+            isBusy={authStatus === "loading"}
           />
         )}
         {activeModal === "form" && formInfo.formType === "login" && (
@@ -202,7 +215,7 @@ function App() {
             }}
             activeModal={activeModal}
             onClose={handleModalClose}
-            isBusy={isBusy}
+            isBusy={authStatus === "loading"}
           />
         )}
       </div>
