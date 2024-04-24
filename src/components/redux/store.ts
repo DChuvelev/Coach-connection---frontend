@@ -1,11 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import clientsReducer from "./slices/clientsSlice";
-import appReducer from "./slices/appSlice";
+import clientsReducer from "./slices/Clients/clientsSlice";
+import appReducer from "./slices/App/appSlice";
+import coachesReducer from "./slices/Coaches/coachesSlice";
 import { buildGetDefaultMiddleware } from "@reduxjs/toolkit/dist/getDefaultMiddleware";
 
 export const store = configureStore({
   reducer: {
-    // coaches: coachesReducer,
+    coaches: coachesReducer,
     clients: clientsReducer,
     app: appReducer,
   },

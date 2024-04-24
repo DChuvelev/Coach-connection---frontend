@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Header from "./Header/Header";
-import Main from "./Main/Main";
 import Footer from "./Footer/Footer";
 import { LangMenu } from "./LangMenu/LangMenu";
 import { RegisterModal } from "./RegisterModal/RegisterModal";
@@ -10,25 +9,65 @@ import { LoginModal } from "./LoginModal/LoginModal";
 import { translations } from "../utils/constants/translations";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import {
-  login,
   setLoginFormValues,
   setRegisterFormValues,
   resetAuthError,
   setAuthStatus,
-} from "./redux/slices/appSlice";
-import { registerUser } from "./redux/slices/appSlice";
+  setCurrentUser,
+  setLoggedIn,
+  setAppStatus,
+  setDoneMessage,
+} from "./redux/slices/App/appSlice";
+import {
+  initUserFromTokenThunk,
+  loginThunk,
+  registerUserThunk,
+} from "./redux/slices/App/appAsync";
 import { FormInfo, defaultFormInfo } from "./ModalWithForm/ModalWithFormTypes";
 import { loginFormDefaultData } from "./LoginModal/LoginModalTypes";
 import { registerFormDefaultData } from "./RegisterModal/RegisterModalTypes";
-import { UserToRegister } from "./redux/slices/dbTypes";
+import { UserToRegister } from "./redux/slices/generalTypes";
+import { CoachProfile } from "./CoachProfile/CoachProfile";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { defaultUser } from "./redux/slices/App/appTypes";
+import { ConfirmModal } from "./ConfirmModal/ConfirmModal";
+import { ProtectedRoute } from "../utils/ProtectedRoute/ProtectedRoute";
+import Preloader from "./Preloader/Preloader";
+import { ClientProfile } from "./ClientProfile/ClientProfile";
+import { SystemMessage } from "./SystemMessage/SystemMessage";
+import {
+  createRandomCoachThunk,
+  getAllCoachesThunk,
+} from "./redux/slices/Coaches/coachesAsync";
+import CoachSelector from "./CoachSelector/CoachSelector";
+import ErrorPage from "./ErrorPage/ErrorPage";
+import CoachPage from "./CoachPage/CoachPage";
+import SlideShow from "./SlideShow/SlideShow";
+import { incCoachesSlideShowCounter } from "./redux/slices/Coaches/coachesSlice";
 
 function App() {
   const [activeModal, setActiveModal] = useState("");
   const [formInfo, setFormInfo] = useState<FormInfo>(defaultFormInfo);
   const currentLanguage = useAppSelector((state) => state.app.lang);
   const dispatch = useAppDispatch();
-  const [isBusy, setIsBusy] = useState(false);
   const authStatus = useAppSelector((state) => state.app.authStatus);
+  const loggedIn = useAppSelector((state) => state.app.loggedIn);
+  const appStatus = useAppSelector((state) => state.app.appStatus);
+  const currentUser = useAppSelector((state) => state.app.currentUser);
+  const appError = useAppSelector((state) => state.app.errorMessage);
+  const doneMessage = useAppSelector((state) => state.app.doneMessage);
+
+  //----------------------- Init -----------------------------------
+
+  useEffect(() => {
+    const asyncInit = async () => {
+      await dispatch(initUserFromTokenThunk());
+      await dispatch(getAllCoachesThunk());
+    };
+    asyncInit();
+  }, []);
+
+  //---------------------- Common functions -----------------------------
 
   useEffect(() => {
     if (authStatus === "succeeded") {
@@ -37,14 +76,16 @@ function App() {
     }
   }, [authStatus]);
 
-  //---------------------- Common functions -----------------------------
-
-  // const handleSubmit = (request) => {
-  //   setIsBusy(true);
-  //   return request().then(handleModalClose).catch(alert).finally(() => {
-  //     setIsBusy(false);
-  //   })
-  // }
+  useEffect(() => {
+    //Close DONE info modal after a pause
+    // console.log(appStatus);
+    if (appStatus === "done") {
+      setTimeout(() => {
+        dispatch(setAppStatus("normal"));
+        dispatch(setDoneMessage(undefined));
+      }, 1500);
+    }
+  }, [appStatus]);
 
   //--------------------- Modals ----------------------------------
   const resetFormsData = () => {
@@ -62,36 +103,20 @@ function App() {
   };
 
   const handleFindCoach = () => {
-    const userToRegister: UserToRegister = {
-      name: "Dmitry",
-      email: "d.chuvelev@gmail.com",
-      password: "redttt",
-      confirmPassword: "redttt",
-      role: "client",
-      userpic: undefined,
-    };
-    dispatch(setRegisterFormValues(userToRegister));
-    dispatch(registerUser());
-    //   console.log('Ask GPT');
-    //   gptApi.askGpt([{
-    //     "role": "user",
-    //     "text": "Расскажи каой-нибудь анекдот"
-    //   }])
-    //   .then((res) => {
-    //     console.log(res);
-    //   }).catch((err) => {
-    //     console.error(err);
-    //   })
+    // const userToRegister: UserToRegister = {
+    //   name: "Dmitry",
+    //   email: "d.chuvelev@gmail.com",
+    //   password: "redttt",
+    //   confirmPassword: "redttt",
+    //   role: "client",
+    //   userpic: undefined,
+    // };
+    // dispatch(setRegisterFormValues(userToRegister));
+    // handleOpenRegisterModal();
+    dispatch(createRandomCoachThunk());
   };
 
   //-------------------------- User login -------------------------------
-
-  // const handleLogin = (userInfo) => {
-  //   const {token, ...otherUserInfo} = userInfo;
-  //   setCurrentUser(otherUserInfo);
-  //   localStorage.setItem('jwt', token);
-  //   setLoggedIn(true);
-  // }
 
   const handleOpenLoginModal = () => {
     setActiveModal("form");
@@ -107,7 +132,7 @@ function App() {
   };
 
   const handleSubmitLogin = () => {
-    dispatch(login());
+    dispatch(loginThunk());
   };
 
   const handleRedirectFromLoginToRegister = () => {
@@ -116,22 +141,19 @@ function App() {
 
   //------------------------- User logout --------------------------
 
-  // const logout = () => {
-  //   localStorage.removeItem('jwt');
-  //   setLoggedIn(false);
-  //   setCurrentUser({
-  //     name: '',
-  //     email: '',
-  //     avatar: '',
-  //     _id: ''
-  //   });
-  //   history.push('/');
-  //   handleModalClose();
-  // }
+  const logout = () => {
+    localStorage.removeItem("jwt");
+    dispatch(setLoggedIn(false));
+    dispatch(setCurrentUser(defaultUser));
+    // history.push('/');
+    handleModalClose();
+    dispatch(setDoneMessage("loggedOut"));
+    dispatch(setAppStatus("done"));
+  };
 
-  // const handleLogout = () => {
-  //   setActiveModal('confirm-logout');
-  // }
+  const handleLogout = () => {
+    setActiveModal("confirm-logout");
+  };
 
   //---------------------------- User registration ------------------------------
 
@@ -149,43 +171,72 @@ function App() {
   };
 
   const handleSubmitRegister = () => {
-    dispatch(registerUser());
-    // var userpicFile = new FormData;
-    // if (userpic.item && userpic.item(0)) {
-    //   console.log(userpic.item(0));
-    //   userpicFile.append("avatar", userpic.item(0));
-    //   console.log(userpicFile);
-    // } else {
-    //   console.log('No file');
-    // }
-    // console.log('Check Success');
-    // handleSubmit(() => {
-    //   return dbApi.registerUser({ email, name, password, role, userpicFile }).then(() => {
-    //     return dbApi.authorizeUser({ email, password }).then((res) => {
-    //       handleLogin(res);
-    //     })
-    //   })
-    // })
+    dispatch(registerUserThunk());
   };
 
   const handleRedirectFromRegisterToLogin = () => {
-    // const newLoginFormValues: LoginFormData = { ...loginFormDefaultData };
-    // Object.assign(newLoginFormValues, loginFormValues);
-    // Object.assign(newLoginFormValues, registerFormValues);
-    // dispatch(setLoginFormValues(newLoginFormValues));
     handleOpenLoginModal();
   };
 
   return (
     <>
-      <div className="App">
+      {appStatus === "waiting" && <Preloader />}
+      {appStatus === "done" && (
+        <SystemMessage
+          message={
+            doneMessage
+              ? translations.appGlobal.doneMessages[doneMessage][
+                  currentLanguage
+                ]
+              : undefined
+          }
+          color={"green"}
+        />
+      )}
+      {appStatus === "error" && (
+        <SystemMessage
+          message={
+            appError
+              ? translations.appGlobal.errorMessages[appError][currentLanguage]
+              : undefined
+          }
+          color={"red"}
+        />
+      )}
+      <div className="app">
         <Header
           handleOpenLangMenu={handleOpenLangMenu}
           handleFindCoach={handleFindCoach}
           handleRegister={handleOpenRegisterModal}
           handleLogin={handleOpenLoginModal}
+          handleLogout={handleLogout}
         />
-        <Main />
+        <div className="app__content">
+          {appStatus === "normal" && (
+            <Routes>
+              <Route path="*" element={<ErrorPage />} />
+              <Route path="/" element={<SlideShow />}></Route>
+              <Route
+                path="/coach-finder"
+                element={
+                  <ProtectedRoute loggedIn={loggedIn}>
+                    {currentUser.role === "client" && <CoachSelector />}
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute loggedIn={loggedIn}>
+                    {currentUser.role === "coach" && <CoachProfile />}
+                    {currentUser.role === "client" && <ClientProfile />}
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/coaches/:coachId" element={<CoachPage />} />
+            </Routes>
+          )}
+        </div>
         <Footer />
         {activeModal === "lang-menu" && (
           <LangMenu
@@ -216,6 +267,15 @@ function App() {
             activeModal={activeModal}
             onClose={handleModalClose}
             isBusy={authStatus === "loading"}
+          />
+        )}
+        {activeModal === "confirm-logout" && (
+          <ConfirmModal
+            message={["Are you sure you want to log out?"]}
+            okBtnTxt="Log out"
+            activeModal={activeModal}
+            onOk={logout}
+            onClose={handleModalClose}
           />
         )}
       </div>

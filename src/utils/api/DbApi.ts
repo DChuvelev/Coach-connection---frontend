@@ -1,13 +1,18 @@
+import { OutgoingHttpHeaders } from "http2";
 import { dbApiRequest } from "../constants/requests";
+import { DbApiConstructorProps } from "./DbApiTypes";
+import { CurrentUser } from "../../components/redux/slices/App/appTypes";
 
 export default class DbApi {
-  constructor({ baseUrl, headers }) {
+  _baseUrl: string;
+  _headers: HeadersInit;
+  constructor({ baseUrl, headers }: DbApiConstructorProps) {
     this._baseUrl = baseUrl;
     this._headers = headers;
     // console.log('DB constructor');
   }
 
-  _request(url, reqObj, errMsg) {
+  _request(url: string, reqObj: RequestInit, errMsg: string) {
     return fetch(url, reqObj).then((res) => {
       if (res.ok) {
         return res.json();
@@ -25,7 +30,7 @@ export default class DbApi {
 
   //------------- Auth - Users part --------------
 
-  _auth(userInfo, path) {
+  _auth(userInfo: Record<string, unknown>, path: string) {
     return this._request(
       `${this._baseUrl}/${path}`,
       {
@@ -37,15 +42,15 @@ export default class DbApi {
     );
   }
 
-  registerUser = (userInfo) => {
+  registerUser = (userInfo: Record<string, unknown>) => {
     return this._auth(userInfo, "signup");
   };
 
-  authorizeUser = (userInfo) => {
+  authorizeUser = (userInfo: Record<string, unknown>) => {
     return this._auth(userInfo, "signin");
   };
 
-  checkToken = (token) => {
+  checkToken = (token: string) => {
     return this._request(
       `${this._baseUrl}/users/me`,
       {
@@ -56,7 +61,13 @@ export default class DbApi {
     );
   };
 
-  updateUserInfo = ({ userInfo, token }) => {
+  updateUserInfo = ({
+    userInfo,
+    token,
+  }: {
+    userInfo: CurrentUser;
+    token: string;
+  }) => {
     return this._request(
       `${this._baseUrl}/users/me`,
       {
@@ -68,17 +79,45 @@ export default class DbApi {
     );
   };
 
-  //------------- db part -------------------
-
-  testRequest() {
-    console.log("In test request");
+  updateUserpic = ({
+    userpic,
+    token,
+  }: {
+    userpic: FormData;
+    token: string;
+  }) => {
     return this._request(
-      `${this._baseUrl}/test`,
+      `${this._baseUrl}/userpics`,
+      {
+        headers: { authorization: `Bearer ${token}` },
+        // headers: this._headersFile,
+        body: userpic,
+        method: "POST",
+      },
+      "Error:"
+    );
+  };
+
+  //------------- Get All Coaches -------------------
+
+  getAllCoaches(token: string) {
+    return this._request(
+      `${this._baseUrl}/users/coaches`,
+      {
+        headers: { ...this._headers, authorization: `Bearer ${token}` },
+        method: "GET",
+      },
+      "Error:"
+    );
+  }
+  createRandomCoach() {
+    return this._request(
+      `${this._baseUrl}/users/coaches/create/random`,
       {
         headers: { ...this._headers },
         method: "GET",
       },
-      "Test request error:"
+      "Error:"
     );
   }
 }

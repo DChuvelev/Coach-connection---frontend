@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { Client, ClientChild, ThunkStatus } from "./dbTypes";
+import { ThunkStatus } from "../generalTypes";
+import { Client } from "../App/appTypes";
 
 interface ClientsState {
   clientsList: Client[];

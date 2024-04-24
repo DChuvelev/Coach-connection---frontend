@@ -1,7 +1,7 @@
 import ruFlag from "../../images/flags/ru.svg";
 import enFlag from "../../images/flags/gb.svg";
 import { LangChoice } from "../models";
-export const langs: {id: LangChoice, name:string, flag: any}[] = [
+export const appLangs: { id: LangChoice; name: string; flag: any }[] = [
   {
     id: LangChoice.Ru,
     name: "Русский",
@@ -13,3 +13,5 @@ export const langs: {id: LangChoice, name:string, flag: any}[] = [
     flag: enFlag,
   },
 ];
+
+// export const spokenLangs = ["English", "Русский", "French", "German"];

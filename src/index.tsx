@@ -1,27 +1,21 @@
-import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import "./index.css";
-import "./vendor/normalize.css";
+// import "./vendor/normalize.css";
 import "./vendor/fonts.css";
 import App from "./components/App";
 import reportWebVitals from "./reportWebVitals";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./components/redux/store";
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <App />,
-  },
-]);
+import { BrowserRouter, HashRouter } from "react-router-dom";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
   <Provider store={store}>
-    <RouterProvider router={router} />
+    <HashRouter>
+      <App />
+    </HashRouter>
   </Provider>
 );
 

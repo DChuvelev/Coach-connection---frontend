@@ -1,6 +1,6 @@
 export type Role = "client" | "coach" | "admin" | "";
 
-export interface UserToRegister extends Record<string, unknown> {
+export interface UserToRegister {
   role: Role;
   email: string;
   password: string;
@@ -9,17 +9,12 @@ export interface UserToRegister extends Record<string, unknown> {
   userpic: FileList | undefined;
 }
 
-export interface LoginFormData extends Record<string, unknown> {
+export interface LoginFormData {
   role: Role;
   email: string;
   password: string;
 }
 
-export interface Client {
-  id: string;
-  name: string;
-}
-
-export interface ClientChild extends Client {}
-
 export type ThunkStatus = "idle" | "loading" | "succeeded" | "failed";
+
+export type statusType = "normal" | "waiting" | "done" | "error" | "starting";

@@ -1,11 +1,11 @@
 import React from "react";
 import "./LangMenu.css";
-import { langs } from "../../utils/constants/langs";
+import { appLangs } from "../../utils/constants/langs";
 
 import { Modal } from "../Modal/Modal";
 import { LangChoice } from "../../utils/models";
 import { useAppDispatch } from "../redux/hooks";
-import { changeLang } from "../redux/slices/appSlice";
+import { changeLang } from "../redux/slices/App/appSlice";
 interface Props {
   handleClose: () => void;
   activeModal: string;
@@ -26,7 +26,7 @@ export const LangMenu: React.FC<Props> = ({
   return (
     <Modal activeModal={activeModal} onClose={onClose}>
       <div>
-        {langs.map((lang, idx) => {
+        {appLangs.map((lang, idx) => {
           return (
             <button
               key={idx}

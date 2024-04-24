@@ -1,5 +1,6 @@
+import { RefObject } from "react";
 import { FormInfo, FormCallbacks } from "../ModalWithForm/ModalWithFormTypes";
-import { UserToRegister } from "../redux/slices/dbTypes";
+import { UserToRegister } from "../redux/slices/generalTypes";
 
 export interface Props {
   formInfo: FormInfo;

@@ -14,8 +14,8 @@ import {
   setLoginFormValues,
   setRegisterFormValues,
   resetAuthError,
-} from "../redux/slices/appSlice";
-import { LoginFormData } from "../redux/slices/dbTypes";
+} from "../redux/slices/App/appSlice";
+import { LoginFormData } from "../redux/slices/generalTypes";
 
 export const LoginModal: React.FC<Props> = ({
   formInfo,
@@ -29,7 +29,7 @@ export const LoginModal: React.FC<Props> = ({
   const registerFormValues = useAppSelector(
     (state) => state.app.registerFormValues
   );
-  const appError = useAppSelector((state) => state.app.error);
+  const backendErrorMessage = useAppSelector((state) => state.app.authMessage);
   const dispatch = useAppDispatch();
   const {
     register,
@@ -59,7 +59,7 @@ export const LoginModal: React.FC<Props> = ({
 
   const formValues = watch();
   useEffect(() => {
-    if (appError) dispatch(resetAuthError());
+    if (backendErrorMessage) dispatch(resetAuthError());
   }, [formValues.email, formValues.password, formValues.role]);
 
   return (
@@ -72,7 +72,7 @@ export const LoginModal: React.FC<Props> = ({
       activeModal={activeModal}
       onClose={onClose}
       isBusy={isBusy}
-      errorMessage={appError}
+      errorMessage={backendErrorMessage}
     >
       <fieldset className="login__input-fieldset">
         <div className="login__input-field">

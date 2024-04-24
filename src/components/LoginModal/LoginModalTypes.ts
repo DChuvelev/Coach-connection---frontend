@@ -1,5 +1,5 @@
 import { FormInfo, FormCallbacks } from "../ModalWithForm/ModalWithFormTypes";
-import { LoginFormData } from "../redux/slices/dbTypes";
+import { LoginFormData } from "../redux/slices/generalTypes";
 
 export interface Props {
   formInfo: FormInfo;

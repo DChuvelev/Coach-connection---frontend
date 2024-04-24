@@ -40,3 +40,13 @@ export const dbApiRequest = {
     "Content-Type": "application/json",
   },
 };
+
+export const gptApiRequest = {
+  baseUrl:
+    process.env.NODE_ENV === "production"
+      ? "https://api.wtwrdc.surfnet.ca"
+      : "http://localhost:3001",
+  headers: {
+    "Content-Type": "application/json",
+  },
+};
